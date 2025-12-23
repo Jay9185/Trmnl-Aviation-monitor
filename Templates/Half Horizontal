@@ -1,0 +1,235 @@
+<style>
+  /* RESET & CONTAINER - HALF HORIZONTAL */
+  .trmnl-half-h {
+    width: 100%;
+    height: 100%;
+    background: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0;
+  }
+
+  /* HEADER */
+  .header {
+    background: black;
+    color: white;
+    padding: 0 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  
+  .header-title {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  .header-count {
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  /* MAIN GRID */
+  .flight-grid {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    height: 100%;
+  }
+
+  /* INDIVIDUAL COLUMN CARD */
+  .flight-card {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+    border-right: 8px solid black; 
+    position: relative;
+    padding-bottom: 0; 
+    /* CHANGED: Increased from 10px to 25px to push top content down */
+    padding-top: 30px;
+  }
+
+  .flight-card:last-child {
+    border-right: none;
+  }
+
+  /* ROW 1: Callsign & Distance */
+  .row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0 15px;
+    margin-bottom: 2px;
+  }
+
+  .callsign {
+    font-size: 44px; 
+    font-weight: 900;
+    line-height: 0.9;
+    color: black;
+    letter-spacing: -2px;
+  }
+
+  .dist-badge {
+    background: black;
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+    padding: 5px 12px;
+    border-radius: 0;
+    height: fit-content;
+  }
+
+  /* ROW 2: Airline */
+  .row-mid {
+    padding: 0 15px;
+  }
+  
+  .airline {
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ROW 3: Metrics */
+  .row-metrics {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    gap: 15px; 
+    /* Pushes this section to the bottom */
+    margin-top: auto; 
+    margin-bottom: 20px; 
+  }
+
+  .metric {
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+  
+  .icon {
+    font-size: 14px;
+    color: #888; 
+    margin-right: 4px;
+    position: relative;
+    top: -2px; 
+  }
+  
+  .val {
+    font-size: 24px; 
+    font-weight: 900;
+    color: black;
+  }
+  
+  .unit {
+    font-size: 12px;
+    font-weight: 700;
+    color: #444;
+    margin-left: 2px;
+  }
+
+  /* ROW 4: Grey Footer Bar */
+  .row-footer {
+    background: #E6E6E6; 
+    height: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+  }
+  
+  .direction {
+    font-weight: 800;
+    font-size: 14px;
+    color: black;
+  }
+  
+  .aircraft-full-name {
+    font-weight: 800;
+    font-size: 11px;
+    color: #555; 
+    text-align: right;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+  }
+
+  /* EMPTY STATE */
+  .no-data {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 800;
+    font-size: 24px;
+    color: #aaa;
+  }
+</style>
+
+{% assign flights = merge_variables.flights | slice: 0, 2 %}
+
+<div class="trmnl-half-h">
+  <div class="header">
+    <span class="header-title">PROXIMATE TRAFFIC</span>
+    <span class="header-count">{{ merge_variables.aircraft_count }}</span>
+  </div>
+
+  <div class="flight-grid">
+    {% for flight in flights %}
+      <div class="flight-card">
+        
+        <div class="row-top">
+          <span class="callsign">{{ flight.callsign }}</span>
+          <span class="dist-badge">{{ flight.distance | default: "--" }} nm</span>
+        </div>
+
+        <div class="row-mid">
+          <span class="airline">{{ flight.airline | default: "UNKNOWN" }}</span>
+        </div>
+
+        <div class="row-metrics">
+          <div class="metric">
+            <span class="icon">↑</span>
+            <span class="val">{{ flight.altitude }}</span>
+            <span class="unit">ft</span>
+          </div>
+          <div class="metric">
+            <span class="icon">→</span>
+            <span class="val">{{ flight.speed }}</span>
+            <span class="unit">kts</span>
+          </div>
+          <div class="metric">
+            <span class="icon">◎</span>
+            <span class="val">{{ flight.heading }}</span>
+            <span class="unit">°</span>
+          </div>
+        </div>
+
+        <div class="row-footer">
+          <span class="direction">{{ flight.cardinal_direction | default: "NE" }}</span>
+          <span class="aircraft-full-name">{{ flight.description | default: flight.aircraftType }}</span>
+        </div>
+        
+      </div>
+    {% else %}
+      <div class="no-data">NO TRAFFIC DETECTED</div>
+    {% endfor %}
+
+    {% if flights.size == 1 %}
+      <div class="flight-card" style="border-right: none;"></div>
+    {% endif %}
+  </div>
+</div>
