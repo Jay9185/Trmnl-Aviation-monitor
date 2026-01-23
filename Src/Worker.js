@@ -1,101 +1,101 @@
 /**
- * TRMNL FLIGHT TRACKER // V5.1 (Merged Edition)
- * - Base: V3.4 (Stable, Full Airline Map, Staggered Fetch)
- * - Feature: Dynamic Airport Names (fetches official names from API)
- * - Returns: 'origin_full' and 'destination_full'
+ * TRMNL FLIGHT TRACKER // V5.2 (Toggleable KV Edition)
+ * - Base: V5.1 (Merged Edition)
+ * - Feature: Added ENABLE_KV switch to config
  */
 
 const DEFAULT_CONFIG = {
-  LAT:    // IGI Airport
-  LON: 
-  RADIUS_NM: 
-  KV_KEY: "flight_cache_v2"
+  LAT: 28.5562,      // IGI Airport (Placeholder - update these)
+  LON: 77.1000,
+  RADIUS_NM: 25,
+  KV_KEY: "flight_cache_v2",
+  ENABLE_KV: true    // <--- SET TO FALSE TO DISABLE CACHE
 };
 
 const AIRLINE_MAP = {
- // --- NORTH AMERICA (MAJOR CARRIERS) ---
- AAL: "American Airlines", UAL: "United Airlines", DAL: "Delta Air Lines", 
- ACA: "Air Canada", SWA: "Southwest", JBU: "JetBlue", ASA: "Alaska Airlines", 
- NKS: "Spirit", FFT: "Frontier", WJA: "WestJet", TSC: "Air Transat", 
- AMX: "Aeromexico", VOI: "Volaris", HAL: "Hawaiian", ALO: "Allegiant",
+  // --- NORTH AMERICA (MAJOR CARRIERS) ---
+  AAL: "American Airlines", UAL: "United Airlines", DAL: "Delta Air Lines", 
+  ACA: "Air Canada", SWA: "Southwest", JBU: "JetBlue", ASA: "Alaska Airlines", 
+  NKS: "Spirit", FFT: "Frontier", WJA: "WestJet", TSC: "Air Transat", 
+  AMX: "Aeromexico", VOI: "Volaris", HAL: "Hawaiian", ALO: "Allegiant",
 
- // --- NORTH AMERICA (REGIONALS - OPERATING AS MAJOR CARRIERS) ---
- SKW: "SkyWest", RPA: "Republic Airways", JIA: "PSA Airlines", ENY: "Envoy Air",
- EDV: "Endeavor Air", ASH: "Mesa Airlines", QXE: "Horizon Air", GJS: "GoJet",
- CPZ: "Compass", PDT: "Piedmont", JAZ: "Jazz Aviation",
+  // --- NORTH AMERICA (REGIONALS - OPERATING AS MAJOR CARRIERS) ---
+  SKW: "SkyWest", RPA: "Republic Airways", JIA: "PSA Airlines", ENY: "Envoy Air",
+  EDV: "Endeavor Air", ASH: "Mesa Airlines", QXE: "Horizon Air", GJS: "GoJet",
+  CPZ: "Compass", PDT: "Piedmont", JAZ: "Jazz Aviation",
 
- // --- SOUTH AMERICA ---
- TAM: "LATAM", LAN: "LATAM", LPE: "LATAM Peru", LXP: "LATAM",
- AVA: "Avianca", GLO: "Gol Transportes", AZU: "Azul", ARG: "Aerolineas Argentinas",
- CMP: "Copa Airlines", SKX: "Sky Airline", JAT: "JetSMART", 
+  // --- SOUTH AMERICA ---
+  TAM: "LATAM", LAN: "LATAM", LPE: "LATAM Peru", LXP: "LATAM",
+  AVA: "Avianca", GLO: "Gol Transportes", AZU: "Azul", ARG: "Aerolineas Argentinas",
+  CMP: "Copa Airlines", SKX: "Sky Airline", JAT: "JetSMART", 
 
- // --- EUROPE (LEGACY CARRIERS) ---
- BAW: "British Airways", DLH: "Lufthansa", AFR: "Air France", KLM: "KLM",
- IBE: "Iberia", AZA: "ITA Airways", SWR: "Swiss", AUA: "Austrian",
- SAS: "SAS", FIN: "Finnair", EIN: "Aer Lingus", TAP: "TAP Portugal",
- LOT: "LOT Polish", THY: "Turkish Airlines", AFL: "Aeroflot",
- ICE: "Icelandair", NAX: "Norwegian", VIR: "Virgin Atlantic", BEL: "Brussels Airlines",
+  // --- EUROPE (LEGACY CARRIERS) ---
+  BAW: "British Airways", DLH: "Lufthansa", AFR: "Air France", KLM: "KLM",
+  IBE: "Iberia", AZA: "ITA Airways", SWR: "Swiss", AUA: "Austrian",
+  SAS: "SAS", FIN: "Finnair", EIN: "Aer Lingus", TAP: "TAP Portugal",
+  LOT: "LOT Polish", THY: "Turkish Airlines", AFL: "Aeroflot",
+  ICE: "Icelandair", NAX: "Norwegian", VIR: "Virgin Atlantic", BEL: "Brussels Airlines",
 
- // --- EUROPE (LOW COST & LEISURE) ---
- RYR: "Ryanair", EZY: "easyJet", EJU: "easyJet Europe", WZZ: "Wizz Air",
- WMT: "Wizz Air Malta", TVF: "Transavia", VLG: "Vueling",
- EWG: "Eurowings", EXS: "Jet2", TUI: "TUI Fly", TOM: "TUI UK",
- CFG: "Condor", EDW: "Edelweiss", NSS: "Norwegian Shuttle",
+  // --- EUROPE (LOW COST & LEISURE) ---
+  RYR: "Ryanair", EZY: "easyJet", EJU: "easyJet Europe", WZZ: "Wizz Air",
+  WMT: "Wizz Air Malta", TVF: "Transavia", VLG: "Vueling",
+  EWG: "Eurowings", EXS: "Jet2", TUI: "TUI Fly", TOM: "TUI UK",
+  CFG: "Condor", EDW: "Edelweiss", NSS: "Norwegian Shuttle",
 
- // --- MIDDLE EAST ---
- UAE: "Emirates", QTR: "Qatar Airways", ETD: "Etihad",
- SVA: "Saudia", GFA: "Gulf Air", KAC: "Kuwait Airways",
- OMA: "Oman Air", RJA: "Royal Jordanian", MEA: "Middle East Airlines",
- FDB: "flydubai", ABY: "Air Arabia", JZR: "Jazeera",
- ELY: "El Al", MSR: "EgyptAir", IAW: "Iraqi Airways",
+  // --- MIDDLE EAST ---
+  UAE: "Emirates", QTR: "Qatar Airways", ETD: "Etihad",
+  SVA: "Saudia", GFA: "Gulf Air", KAC: "Kuwait Airways",
+  OMA: "Oman Air", RJA: "Royal Jordanian", MEA: "Middle East Airlines",
+  FDB: "flydubai", ABY: "Air Arabia", JZR: "Jazeera",
+  ELY: "El Al", MSR: "EgyptAir", IAW: "Iraqi Airways",
 
- // --- ASIA (CHINA & EAST ASIA) ---
- CCA: "Air China", CSN: "China Southern", CES: "China Eastern",
- CHH: "Hainan Airlines", CSC: "Sichuan Airlines", CXA: "XiamenAir", CQN: "Chongqing",
- CPA: "Cathay Pacific", HDA: "Cathay Dragon", CRK: "Hong Kong Airlines",
- JAL: "Japan Airlines", ANA: "All Nippon", APJ: "Peach",
- KAL: "Korean Air", AAR: "Asiana", JNA: "Jin Air",
- EVA: "EVA Air", CAL: "China Airlines",
+  // --- ASIA (CHINA & EAST ASIA) ---
+  CCA: "Air China", CSN: "China Southern", CES: "China Eastern",
+  CHH: "Hainan Airlines", CSC: "Sichuan Airlines", CXA: "XiamenAir", CQN: "Chongqing",
+  CPA: "Cathay Pacific", HDA: "Cathay Dragon", CRK: "Hong Kong Airlines",
+  JAL: "Japan Airlines", ANA: "All Nippon", APJ: "Peach",
+  KAL: "Korean Air", AAR: "Asiana", JNA: "Jin Air",
+  EVA: "EVA Air", CAL: "China Airlines",
 
- // --- ASIA (SE/SOUTH/CENTRAL) ---
- SIA: "Singapore Airlines", MAS: "Malaysia Airlines", GIA: "Garuda Indonesia",
- THA: "Thai Airways", HVN: "Vietnam Airlines", VJC: "VietJet",
- AIC: "Air India", IGO: "IndiGo", VTI: "Vistara", SEJ: "SpiceJet",
- AXB: "Air India Express", AKY: "Akasa Air", IAD: "AIX Connect",
- ALK: "SriLankan", BBC: "Biman Bangladesh", PIA: "Pakistan Int",
- KZR: "Air Astana", UZB: "Uzbekistan Airways", AXM: "AirAsia",
- JAI: "Jet Airways", STA: "Star Air", ALL: "Alliance Air",
+  // --- ASIA (SE/SOUTH/CENTRAL) ---
+  SIA: "Singapore Airlines", MAS: "Malaysia Airlines", GIA: "Garuda Indonesia",
+  THA: "Thai Airways", HVN: "Vietnam Airlines", VJC: "VietJet",
+  AIC: "Air India", IGO: "IndiGo", VTI: "Vistara", SEJ: "SpiceJet",
+  AXB: "Air India Express", AKY: "Akasa Air", IAD: "AIX Connect",
+  ALK: "SriLankan", BBC: "Biman Bangladesh", PIA: "Pakistan Int",
+  KZR: "Air Astana", UZB: "Uzbekistan Airways", AXM: "AirAsia",
+  JAI: "Jet Airways", STA: "Star Air", ALL: "Alliance Air",
 
- // --- OCEANIA ---
- QFA: "Qantas", QLK: "QantasLink", ANZ: "Air New Zealand",
- VOZ: "Virgin Australia", JST: "Jetstar", RXA: "Rex",
- FJI: "Fiji Airways", NGU: "Air Niugini",
+  // --- OCEANIA ---
+  QFA: "Qantas", QLK: "QantasLink", ANZ: "Air New Zealand",
+  VOZ: "Virgin Australia", JST: "Jetstar", RXA: "Rex",
+  FJI: "Fiji Airways", NGU: "Air Niugini",
 
- // --- AFRICA ---
- ETH: "Ethiopian Airlines", SAA: "South African", RAM: "Royal Air Maroc",
- KQA: "Kenya Airways", DAH: "Air Algerie", RWD: "RwandAir",
- LNI: "Lion Air", TUN: "Tunisair",
+  // --- AFRICA ---
+  ETH: "Ethiopian Airlines", SAA: "South African", RAM: "Royal Air Maroc",
+  KQA: "Kenya Airways", DAH: "Air Algerie", RWD: "RwandAir",
+  LNI: "Lion Air", TUN: "Tunisair",
 
- // --- CARGO & LOGISTICS ---
- FDX: "FedEx", UPS: "UPS Airlines", GTI: "Atlas Air", CLX: "Cargolux",
- BOX: "AeroLogic", KHK: "Kitty Hawk", CKS: "Kalitta Air",
- PAC: "Polar Air", BCS: "DHL", DHK: "DHL Air",
- QJE: "Quikjet", BDG: "Blue Dart",
+  // --- CARGO & LOGISTICS ---
+  FDX: "FedEx", UPS: "UPS Airlines", GTI: "Atlas Air", CLX: "Cargolux",
+  BOX: "AeroLogic", KHK: "Kitty Hawk", CKS: "Kalitta Air",
+  PAC: "Polar Air", BCS: "DHL", DHK: "DHL Air",
+  QJE: "Quikjet", BDG: "Blue Dart",
 
- // --- PRIVATE / BUSINESS JETS ---
- EJA: "NetJets", NJE: "NetJets Europe", VJT: "VistaJet",
- LXJ: "Flexjet", GAC: "GlobeAir", AZE: "Arcus Air",
- XRO: "Exxr", ADN: "Danish Air Transport",
+  // --- PRIVATE / BUSINESS JETS ---
+  EJA: "NetJets", NJE: "NetJets Europe", VJT: "VistaJet",
+  LXJ: "Flexjet", GAC: "GlobeAir", AZE: "Arcus Air",
+  XRO: "Exxr", ADN: "Danish Air Transport",
 
- // --- MILITARY / GOVERNMENT ---
- RCH: "US Air Force (Reach)", CNV: "US Navy (Convoy)", RRR: "Royal Air Force",
- CFC: "Canadian Forces", ASY: "Royal Australian AF",
- IAM: "Italian Air Force", GAF: "German Air Force",
- AME: "Spanish Air Force", COTAM: "French Air Force",
- PAT: "US Army", UAF: "UAE Air Force",
+  // --- MILITARY / GOVERNMENT ---
+  RCH: "US Air Force (Reach)", CNV: "US Navy (Convoy)", RRR: "Royal Air Force",
+  CFC: "Canadian Forces", ASY: "Royal Australian AF",
+  IAM: "Italian Air Force", GAF: "German Air Force",
+  AME: "Spanish Air Force", COTAM: "French Air Force",
+  PAT: "US Army", UAF: "UAE Air Force",
 
- // --- UNKNOWN FALLBACK ---
- UNKNOWN: "Unknown Airline"
+  // --- UNKNOWN FALLBACK ---
+  UNKNOWN: "Unknown Airline"
 };
 
 export default {
@@ -104,8 +104,13 @@ export default {
   },
 
   async fetch(request, env, ctx) {
-    // 1. Try Cache
-    if (env.FLIGHT_KV) {
+    // 0. Determine if KV is enabled (Env Var overrides Config)
+    const isKVEnabled = env.ENABLE_KV !== undefined 
+      ? (String(env.ENABLE_KV) === "true") 
+      : DEFAULT_CONFIG.ENABLE_KV;
+
+    // 1. Try Cache (Only if Enabled AND Binding exists)
+    if (isKVEnabled && env.FLIGHT_KV) {
       const cached = await env.FLIGHT_KV.get(DEFAULT_CONFIG.KV_KEY);
       if (cached) {
         return new Response(cached, { 
@@ -113,6 +118,7 @@ export default {
         });
       }
     }
+
     // 2. Live Fetch
     const freshData = await updateFlightCache(env);
     return new Response(JSON.stringify(freshData), { 
@@ -126,9 +132,14 @@ async function updateFlightCache(env) {
   const lon = parseFloat(env.LONGITUDE || DEFAULT_CONFIG.LON);
   const radius = parseFloat(env.RADIUS_NM || DEFAULT_CONFIG.RADIUS_NM);
 
+  // Check KV setting inside function as well
+  const isKVEnabled = env.ENABLE_KV !== undefined 
+      ? (String(env.ENABLE_KV) === "true") 
+      : DEFAULT_CONFIG.ENABLE_KV;
+
   try {
     const resp = await fetch(`https://api.airplanes.live/v2/point/${lat}/${lon}/${radius}`, { 
-        headers: { 'User-Agent': 'TRMNL-Worker-V5.1' } 
+        headers: { 'User-Agent': 'TRMNL-Worker-V5.2' } 
     });
     const data = await resp.json();
     const acList = data.ac || [];
@@ -209,7 +220,8 @@ async function updateFlightCache(env) {
         }
       };
 
-      if (env.FLIGHT_KV) {
+      // WRITE TO KV (Only if Enabled AND Binding exists)
+      if (isKVEnabled && env.FLIGHT_KV) {
         await env.FLIGHT_KV.put(DEFAULT_CONFIG.KV_KEY, JSON.stringify(payload));
       }
       return payload;
