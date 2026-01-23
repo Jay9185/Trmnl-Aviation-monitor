@@ -79,8 +79,8 @@
   }
 
   .route-label {
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 900;
     color: #888;
     text-transform: uppercase;
     margin-bottom: 2px;
@@ -88,8 +88,8 @@
   }
 
   .route-city {
-    font-size: 12px; 
-    font-weight: 700;
+    font-size: 14px; 
+    font-weight: 900;
     color: black;
     line-height: 1.15;
     text-transform: capitalize; 
@@ -115,7 +115,7 @@
 
   .aircraft-info {
     font-size: 18px;
-    font-weight: 700;
+    font-weight: 900;
     text-transform: uppercase;
     color: black;
     display: flex;
@@ -126,8 +126,8 @@
 
   .ac-type { 
     font-size: 14px; 
-    color: #666; 
-    font-weight: 500;
+    color: black; 
+    font-weight: 900; /* FIXED: Corrected invalid 9000 value */
   }
 
   /* --- ROW 3: Metrics --- */
@@ -150,7 +150,7 @@
     gap: 6px;
     line-height: 1;
   }
-  
+   
   .dist-label {
     font-size: 13px; font-weight: 900; color: black; text-transform: uppercase; letter-spacing: 0.5px;
   }
@@ -211,7 +211,7 @@
     vertical-align: top; 
     line-height: 1;
   }
-   
+    
   .no-signal {
     width: 100%; height: 100%;
     display: flex; justify-content: center; align-items: center;
@@ -221,14 +221,8 @@
 
 {% assign flight = merge_variables.flights | first %}
 
-{% if flight.route_pretty %}
-  {% assign route_parts = flight.route_pretty | split: " → " %}
-  {% assign origin_name = route_parts[0] %}
-  {% assign dest_name = route_parts[1] %}
-{% else %}
-  {% assign origin_name = flight.origin | default: "---" %}
-  {% assign dest_name = flight.destination | default: "---" %}
-{% endif %}
+{% assign origin_name = flight.origin_full | default: "---" %}
+{% assign dest_name = flight.destination_full | default: "---" %}
 
 <div class="trmnl-screen">
 
@@ -239,7 +233,7 @@
 
   <div class="top-section">
     {% if flight %}
-       
+        
       <div class="row-1">
         <span class="callsign">{{ flight.callsign }}</span>
         
