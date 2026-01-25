@@ -10,36 +10,124 @@ A clean, high-contrast air traffic monitor for [TRMNL](https://trmnl.com/) E-ink
   - **Quadrant:** Shows the single closest aircraft (optimized for 1/4 screen).
 - **Visuals:** Custom icons for altitude/speed/heading and a distinct high-contrast design.
 
+Here is a significantly improved `README.md` that includes the missing configuration steps found in your source code (like Environment Variables and KV Caching) and clarifies the deployment process.
+
+---
 ## 🚀 Deployment Guide
 
-### Step 1: Set up the Backend (Cloudflare Workers)
-TRMNL requires a JSON endpoint to fetch data. We use Cloudflare Workers (free tier) to generate this.
+### Prerequisites
 
-1. Log in to your [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. Go to **Workers & Pages** > **Create Application** > **Create Worker**.
-3. Name it `trmnl-aviation-monitor` and click **Deploy**.
-4. Click **Edit Code**.
-5. Copy the content of `src/worker.js` from this repository and paste it into the editor.
-   - *Note: The provided script sends mock data for testing. To use real data, you will need to integrate an API key from OpenSky or ADSBExchange.*
-6. Click **Save and Deploy**.
-7. Copy your Worker URL (e.g., `https://trmnl-aviation-monitor.yourname.workers.dev`).
+* A **TRMNL** E-ink Display.
+* A free **[Cloudflare](https://dash.cloudflare.com/)** account.
+* Your location coordinates (Latitude & Longitude).
 
-### Step 2: Configure TRMNL
-1. Go to your [TRMNL Dashboard](https://trmnl.com/dashboard).
-2. Navigate to **Plugins** > **Private Plugins**.
-3. Click **+ Add New Plugin**.
-4. **Name:** "Aviation Monitor".
-5. **Strategy:** Select **Polling** and paste your Cloudflare Worker URL.
-6. **Markup:** Copy the code from one of the files in the `templates/` folder (e.g., `half-vertical.html`) and paste it into the Markup area.
-7. Save the plugin.
+### Step 1: The Brain (Cloudflare Worker)
 
-### Step 3: Add to Screen
-1. Go to **Screens**.
-2. Select a layout configuration that matches the template you chose (Half Vertical, Half Horizontal, or Quadrant).
-3. Add the "Aviation Monitor" plugin to the desired slot.
+We need a small server script to fetch flight data, filter it, and format it for the TRMNL. We will use Cloudflare Workers (free tier).
 
-## 🛠️ Customization
-You can modify the `worker.js` file to change the location coordinates or filter for specific airlines.
+1. **Create the Worker:**
+* Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
+* Go to **Workers & Pages** > **Create Application** > **Create Worker**.
+* Name it `trmnl-aviation-monitor` and click **Deploy**.
+
+
+2. **Add the Code:**
+* Click **Edit Code**.
+* Delete the existing "Hello World" code.
+* Copy the **entire contents** of `Src/Worker.js` from this repository and paste it into the editor.
+* Click **Save and Deploy**.
+
+
+3. **Configure Location (Crucial Step):**
+* Go back to your Worker's overview page (click the back arrow).
+* Navigate to **Settings** > **Variables and Secrets**.
+* Click **Add** and define the following variables to target your home/office:
+* `LATITUDE`: Your latitude (e.g., `40.7128`).
+* `LONGITUDE`: Your longitude (e.g., `-74.0060`).
+* `RADIUS_NM`: Scan radius in nautical miles (recommended: `25`).
+
+
+
+
+> **Note:** If you skip this step, the worker defaults to New Delhi (IGI Airport) coordinates.
+
+
+4. **(Optional) Enable Caching:**
+* To prevent hitting API rate limits, you can enable KV caching.
+* In Cloudflare, go to **Storage & Databases** > **KV** > **Create Namespace**. Name it `FLIGHT_CACHE`.
+* Go back to your Worker > **Settings** > **Variables and Secrets** > **KV Namespace Bindings**.
+* Bind the variable name `FLIGHT_KV` to your `FLIGHT_CACHE` namespace.
+* Add a new environment variable: `ENABLE_KV` = `true`.
+
+
+
+### Step 2: The Face (TRMNL Plugin)
+
+Now we tell the TRMNL display how to show the data.
+
+1. **Create the Plugin:**
+* Go to your [TRMNL Dashboard](https://trmnl.com/dashboard).
+* Navigate to **Plugins** > **Private Plugins**.
+* Click **+ Add New Plugin**.
+
+
+2. **Configure Strategy:**
+* **Name:** `Aviation Monitor`
+* **Strategy:** Select **Polling**.
+* **Poller URL:** Paste your Cloudflare Worker URL (e.g., `https://trmnl-aviation-monitor.yourname.workers.dev`).
+
+
+3. **Choose Your Layout:**
+* Open the `Templates/` folder in this repo and choose a file:
+* `Full.html`: Best for a dedicated screen.
+* `Half Horizontal`: Best for tracking two planes in landscape mode.
+* `half verticle.html`: Best for a list view in portrait mode.
+
+
+* Copy the HTML content and paste it into the **Markup** section of the TRMNL plugin editor.
+* Click **Save**.
+
+
+
+### Step 3: Go Live
+
+1. Go to **Screens** in your TRMNL dashboard.
+2. Add your new **Aviation Monitor** plugin to a layout slot.
+3. Refresh your device!
+
+---
+
+## 🛠️ Advanced Customization
+
+### Airline Naming
+
+The worker includes a massive `AIRLINE_MAP` object to convert ICAO codes (e.g., `BAW`) to names (`British Airways`). If you see "Other" or "Unknown" frequently, you can add local airlines to the `AIRLINE_MAP` object in `worker.js`.
+
+### Filtering
+
+By default, the script filters out **IndiGo** flights (line 144: `.filter(f => f.airline !== "IndiGo")`). This was likely a personal preference of the author.
+
+* **To remove this filter:** Delete or comment out that line in `worker.js`.
+* **To filter tracking:** You can modify this logic to only show specific airlines or aircraft types.
+
+---
+
+## ❓ Troubleshooting
+
+**"No Traffic Detected"**
+
+* Check your `LATITUDE` and `LONGITUDE` variables in Cloudflare.
+* Increase the `RADIUS_NM` variable (try `40` or `50`).
+* Verify the API is working by visiting your Worker URL in a browser. You should see a JSON response.
+
+**"Unknown Airline"**
+
+* The airline code isn't in the mapping list. You can add it manually in the `worker.js` file under `const AIRLINE_MAP`.
+
+**Screen shows code/markup instead of design**
+
+* Ensure you copied the HTML *exactly* into the TRMNL Markup field, including the `{% assign ... %}` tags at the top.
 
 ## License
-MIT
+
+MIT License
