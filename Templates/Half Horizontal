@@ -219,7 +219,7 @@
         </div>
 
         <div class="row-footer">
-          <span class="direction">{{ flight.cardinal_direction | default: "NE" }}</span>
+          <span class="direction">{{ flight.direction | default: "NE" }}</span>
           <span class="aircraft-full-name">{{ flight.description | default: flight.aircraftType }}</span>
         </div>
         
