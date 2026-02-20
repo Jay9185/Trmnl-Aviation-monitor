@@ -2,6 +2,10 @@
 
 A clean, high-contrast air traffic monitor for [TRMNL](https://trmnl.com/) E-ink displays. This project includes the Liquid HTML templates and a Cloudflare Worker script to fetch and format flight data.
 
+![IMG20260117113246](https://github.com/user-attachments/assets/cb1256d3-a347-4308-9249-d64254ee433b)
+
+![IMG20260117114712](https://github.com/user-attachments/assets/8ba8bad2-363a-43da-bd26-9c1f1a52755f)
+
 ## Features
 - **Real-time Data:** Displays Altitude, Speed, Heading, and Callsigns.
 - **Multiple Layouts:**
