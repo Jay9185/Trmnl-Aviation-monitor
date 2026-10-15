@@ -2,7 +2,7 @@
 
 A clean, high-contrast air traffic monitor for [TRMNL](https://trmnl.com/) E-ink displays. This project includes the Liquid HTML templates and a Cloudflare Worker script to fetch and format flight data.
 
-## [Full write up with images](https://turbulencegains.com/trmnl-review-2026/)
+> 📖 **Read the write-up:** Full write-up with photos in my **[TRMNL Review (2026)](https://turbulencegains.com/trmnl-review-2026/)** and **[TRMNL Flight Radar guide](https://turbulencegains.com/trmnl-flight-radar-guide/)** on TurbulenceGains.
 
 ![IMG20260117113246](https://github.com/user-attachments/assets/cb1256d3-a347-4308-9249-d64254ee433b)
 
